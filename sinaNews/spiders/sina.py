@@ -56,21 +56,26 @@ class SinaSpider(scrapy.Spider):
         #按我的想法就是先把所有的找出来，访问一遍看看符不符合文章格式
         sonUrls = response.xpath('//a/@href').extract()
 
+
         items=[]
 
         for i in range(0,len(sonUrls)):
-            item = SinanewsItem()
-            item['parentTitle'] = meta_1['parentTitle']
-            item['parentUrl'] = meta_1['parentUrl']
-            item['subUrl'] = meta_1['subUrl']
-            item['subTitle'] = meta_1['subTitle']
-            item['subFilename'] = meta_1['subFilename']
-            item['sonUrl'] = sonUrls[i]
-            # items.append(item)
-            yield item
+            # 筛选出头部相同的url
+            if_belong=sonUrls[i].startswith(meta_1['subUrl'])
+            # if_news = re.match("\d{4}-\d{2}-\d{2}",sonUrls[i])
+            if if_belong :
+                item = SinanewsItem()
+                item['parentTitle'] = meta_1['parentTitle']
+                item['parentUrl'] = meta_1['parentUrl']
+                item['subUrl'] = meta_1['subUrl']
+                item['subTitle'] = meta_1['subTitle']
+                item['subFilename'] = meta_1['subFilename']
+                item['sonUrl'] = sonUrls[i]
+                items.append(item)
+                # yield item
 
-        # for item in items:
-        #     yield scrapy.Request(url=item['sonUrl'], meta={'meta_2': item}, callback=self.detail_parse)
+        for item in items:
+            yield scrapy.Request(url=item['sonUrl'], meta={'meta_2': item}, callback=self.detail_parse)
 
     # 数据解析方法，获取文章标题和内容,验证一下格式，可能不是正文链接
     def detail_parse(self, response):
@@ -79,9 +84,9 @@ class SinaSpider(scrapy.Spider):
             print head.extract()[0]
             item=response.meta['meta_2']
             content=""
-            content_list=response.xpath('//div[id=@"artibody"]/p/text()').extract()
+            content_list=response.xpath('//div[@id="artibody"]/p/text()').extract()
             for one in content_list:
                 content+=one
-            item['head']=head
+            item['head']=head.extract()[0]
             item['content']=content
             yield item

@@ -8,14 +8,21 @@
 
 class SinanewsPipeline(object):
     def __init__(self):
-        self.filename=open("url.txt","w")
+        # self.filename=open("url.txt","w")
+        pass
 
     def process_item(self, item, spider):
-        sonUrl=item['sonUrl']
-        sonUrl+='\n'
-        self.filename.write(sonUrl.encode("utf-8"))
-        self.filename.flush()
+        sonUrls = item['sonUrl']
+
+        # 文件名为子链接url中间部分，并将 / 替换为 _，保存为 .txt格式
+        filename = sonUrls[7:-6].replace('/', '_')
+        filename += ".txt"
+
+        fp = open(item['subFilename'] + '/' + filename, 'w')
+        fp.write(item['content'].encode("utf-8"))
+        fp.close()
         return item
 
     def close_spider(self,spider):
-        self.filename.close()
+        # self.filename.close()
+        pass
