@@ -3,13 +3,19 @@ import scrapy
 import os
 import  re
 from sinaNews.items import SinanewsItem
+from scrapy_redis.spiders import RedisSpider
 
 
-class SinaSpider(scrapy.Spider):
+class SinaSpider(RedisSpider):
     # Spider的名字，运行命令时根据名字选择启动的spider
     name = 'sina'
-    allowed_domains = ['sina.com.cn']
-    start_urls = ['http://news.sina.com.cn/guide/']
+    redis_key = "sinaspider:start_urls"
+    def __init__(self,*args,**kwargs):
+        domain=kwargs.pop('domain','')
+        self.allowed_domains=filter(None,domain.split(','))
+        allowed_domains = ['sina.com.cn']
+        super(SinaSpider,self).__init__(*args,**kwargs)
+        # start_urls = ['http://news.sina.com.cn/guide/']
 
     def parse(self, response):
         items=[]
